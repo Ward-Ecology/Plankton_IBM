@@ -17,14 +17,14 @@ run('parameters/default_params.m');
 eco_params.use_bioinf     = true; % if true, enable neutral genomes
 eco_params.bioinf_verbose = true; % if true, save details of *all* cell divisions
 
-env_forcing.tmax          = 1.*360;        % (N.B. 360 days per year by default)
-eco_params.forcing        = 'squarewave';   % define temperature forcing function
+env_forcing.tmax          = 15.*360;        % (N.B. 360 days per year by default)
+eco_params.forcing        = 'sinusoidal';   % define temperature forcing function
 
 eco_params.ngenome        = 50; % number of neutral binary genes (53 bases each)
 eco_params.pneutral       = 1;
 eco_params.resting_stages = false;
 
-eco_params.V              = 1e-4; % Volume of culture (1e-6 is 1 ml)
+eco_params.V              = 1e-6; % Volume of culture (1e-6 is 1 ml)
 eco_params.nsuper         = 1;    % number of individuals per super-individual
 
 eco_params.initialtraits = 'single'; % define initial trait distribution
