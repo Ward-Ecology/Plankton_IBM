@@ -4,8 +4,8 @@ clear
 addpath Functions
 bioinf_fcns  = bioinf_functions; 
 
-outdir = ['~/GitHub/Plankton_IBM/output'];
-cd(outdir)
+% outdir = 'output';
+% cd(outdir)
 load('workspace.mat','eco_params','env_forcing')
 
 fntsz = 14;
@@ -91,7 +91,7 @@ end
 IBM_output=load('IBM_output.mat');
 
 T=linspace(0,max(IBM_output.tout),10000);
-figure(999)
+f999=figure(999);
 clf
 for i=1:size(nodeid,1)
     nds = nodeid{i}';
@@ -128,8 +128,7 @@ ylabel('Thermal optimum ^\circC')
 
 set(gcf,'Color','w')
 if savefigs
-    export_fig -png -r450 -opengl lineage_distribution.png
-    print -depsc -r300 -painters lineage_distribution.eps
+    exportgraphics(f999,'lineage_distribution.png','Resolution',450)
 end
 
 
@@ -266,11 +265,9 @@ set(gca,'FontSize',fntsz)
 
 if savefigs
     if radial
-        export_fig -r450 -opengl radial.png
-        print -depsc -tiff -r300 -painters radial.eps
+        exportgraphics(f101,'radial.png','Resolution',450)
     else
-        export_fig -r450 -opengl phylogeny.png
-        print -depsc -tiff -r300 -painters phylogeny.eps
+        exportgraphics(f101,'phylogeny.png','Resolution',450)
     end
 end
 
@@ -339,8 +336,7 @@ scatter(T,env_forcing.Tfunc(T),1,'r','filled','MarkerEdgeAlpha',0.1)
 drawnow
 set(gcf,'Color','w')
 if savefigs
-    export_fig -png -r450 -opengl time_series.png
-    print -depsc -r300 -painters time_series.eps
+    exportgraphics(f102,'time_series.png','Resolution',450)
 end
 
 %%
@@ -433,8 +429,7 @@ if ~strcmp(func2str(env_forcing.Tfunc),'squarewave')
     
     set(gcf,'Color','w')
     if savefigs
-        export_fig -png -r450 -opengl fitness.png
-        print -depsc -r300 -painters fitness.eps
+        exportgraphics(f654,'fitness.png','Resolution',450)
     end
 end
 %% bioinformatics toolbox
@@ -547,8 +542,7 @@ sh2.Position=[0.15  0.1100    0.1023    0.8150];
 set(gcf,'Color','w')
 
 if savefigs
-    export_fig -r450 -opengl genome.png
-    print -depsc -tiff -r300 -painters genome.eps
+    exportgraphics(f303,'genome.png','Resolution',450)
 end
 
 
@@ -561,7 +555,7 @@ nextant = numel(iextant);
 nsample = min(nsample,nextant); % decrease if not enough nodes
 isample = sort(randsample(iextant,nsample)); % sample without replacement
 
-figure(111)
+f111=figure(111)
 hold on
 xx=sort(Xdist);
 xx=xx-max(xx);
@@ -577,7 +571,8 @@ ylabel('Coalescences')
 
 if savefigs
     export_fig -r450 genome.png
-    print -depsc -tiff -r300 -painters coalesence.eps
+    print -depsc -tiff -r300 -painters .eps
+    exportgraphics(f111,'coalesence.png','Resolution',450)
 end
 
 %%
@@ -746,62 +741,3 @@ end
 
 
 return
-%% plot radial tree with binary genome at leaves
-radial = true; % draw trees using linear or polar projection
-nodesz = 50;
-f1=figure(100);
-f1.Position=[259 706 1436 639];
-clf
-
-% plot sampled tree
-h = plot(Graph_directed,'Layout','layered','AssignLayers','alap');
-rho=divtime';
-theta=normalize(h.XData,'range').*1.975.*psat;
-[x,y] = pol2cart(theta,rho);
-axis square
-h.XData = x;
-h.YData = y;
-axis off
-h.LineWidth=3;
-h.NodeColor='none';
-h.ArrowSize=0;
-h.EdgeAlpha=1;
-
-h.NodeLabel=[];
-h.EdgeColor=plotclr(Graph_directed.Edges.EndNodes(:,2),:);
-hold on
-scatter(0,0,2*nodesz,'k');
-scatter(h.XData,h.YData,nodesz,t_opt,'filled');
-scatter(h.XData,h.YData,nodesz,'k');
-scatter(h.XData(ilive),h.YData(ilive),2*nodesz,t_opt(ilive,:),'filled');
-scatter(h.XData(ilive),h.YData(ilive),2*nodesz,'k');
-nyears=env_forcing.tmax./env_forcing.daysperyear;
-box on
-cx=caxis;
-set(gcf,'Color','w')
-colormap(redblue)
-
-rho=max(divtime).*1.025;
-[x,y] = pol2cart(theta,rho);
-j=0;
-% for i = 1:numel(ilive)
-%     th=text(x(ilive(i)),y(ilive(i)),genome_string(i,1:53),'Rotation',rad2deg(theta(ilive(i))));
-% %     th.Color = plotclr(ilive(i),:);
-%     th.FontSize = fntsz;
-%     th.FontName = 'Courier';
-%     th.FontWeight = 'Bold';
-%     rad2deg(theta(ilive(i)))
-% end
-
-text(0,0,'  Initial seed','FontSize',fntsz)
-ylim([-10 10])
-axis equal
-
-
-
-
-
-
-
-
-

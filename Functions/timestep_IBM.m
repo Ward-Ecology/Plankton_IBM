@@ -15,8 +15,10 @@ function [yout y tout eco_params bioinformatics phylogeny] = timestep_IBM(y,env_
         [y eco_params bioinformatics phylogeny] = MUSE_IBM_eqs(t,y,env_forcing,eco_params,bioinformatics,bioinf_fcns,phylogeny);
             
         % print simulation information at set intervals
-        if rem(t,30)==0 & t>0 
-            time1=toc(t1);
+        if rem(t,1)==0 & t>0 
+            if rem(t,30)==0
+                time1=toc(t1);
+            end
             
             % get P cell biomasses
             P   = y(2:end-1);
@@ -32,7 +34,7 @@ function [yout y tout eco_params bioinformatics phylogeny] = timestep_IBM(y,env_
 
             % collate state variables for output
             yout(t,:)=[y(1);c;y(end)];
-            
+
             % display computation info
 %             clc
             if rem(t,30)==0

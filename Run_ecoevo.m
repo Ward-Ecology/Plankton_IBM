@@ -18,13 +18,14 @@ eco_params.use_bioinf     = true; % if true, enable neutral genomes
 eco_params.bioinf_verbose = true; % if true, save details of *all* cell divisions
 
 env_forcing.tmax          = 15.*360;        % (N.B. 360 days per year by default)
-eco_params.forcing        = 'sinusoidal';   % define temperature forcing function
+eco_params.forcing        = 'constant';   % define temperature forcing function
+% forcing cases 'constant', 'stepfunction', 'sinusoidal', 'squarewave', 'gradual', 'gradualsinusoidal'
 
 eco_params.ngenome        = 50; % number of neutral binary genes (53 bases each)
-eco_params.pneutral       = 1;
+eco_params.pneutral       = 1;  % Set to 0.1 for 1000 year runs to avoid saturation
 eco_params.resting_stages = false;
 
-eco_params.V              = 1e-6; % Volume of culture (1e-6 is 1 ml)
+eco_params.V              = 1e-4; % Volume of culture (1e-6 is 1 ml) (All runs in Ward & Collins at 1e-4)
 eco_params.nsuper         = 1;    % number of individuals per super-individual
 
 eco_params.initialtraits = 'single'; % define initial trait distribution
@@ -45,6 +46,7 @@ switch eco_params.model_type
         % eco_params   = ecological parameters
         
 %         profile viewer
+
         
         save('output/IBM_output.mat', '-v7.3')
         

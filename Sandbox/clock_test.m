@@ -1,7 +1,7 @@
 clear
 clc
 
-addpath Functions
+addpath ../Functions
 bioinf_fcns  = bioinf_functions; 
 
 savefigs = true;
@@ -24,7 +24,7 @@ prgb  = zeros(nsteps,ndists);
 
 cfactor       = gamma((ngenes+1)/2)./ gamma(ngenes/2); % correction factor for n dimensions
 
-clf
+f=waitbar(0,'Iterating...');
 for i=tsteps
     rgb       = bioinf_fcns.rgb_mutate(rgb,ones(size(rgb,1),1));
     prgb(i,:) = pdist(rgb);
@@ -34,13 +34,16 @@ for i=tsteps
     end
     genestr   = bioinf_fcns.print_genomes(genes);
     pbin(i,:) = pdist(genestr-'0','Hamming');
-    clc,disp(i)
-end
 
+    waitbar(i./nsteps,f,'Iterating...');
+end
+close(f)
 
 %%
+f101 = figure(101);
 clf
 fntsz=16;
+
 
 subplot(121)
 % plot accrued Euclidean distance through time
@@ -123,8 +126,7 @@ set(gca,'FontSize',fntsz)
 
 if savefigs
     set(gcf,'Color','w')
-    export_fig -r450 -opengl /Users/baw103/GitHub/RGB_evolution/Figures/clock_test.png
-    print -depsc -tiff -r300 -painters /Users/baw103/GitHub/RGB_evolution/Figures/clock_test.eps
+    exportgraphics(f101,'clock_test.png','Resolution',450)
 end
 
 return
