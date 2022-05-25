@@ -2,7 +2,7 @@
 
 Instructions for reproducing the figures presented in "Rapid evolution allows coexistence of highly divergent lineages within the same niche", by Ward and Collins.
 
-Published model results can be reproduced by running the ``` Run_ecoevo.m ``` script. This will run the model and plot a selection of different figures
+Published model results can be reproduced for different configurations by running the ``` Run_ecoevo.m ``` script. This will run the model and plot a selection of different figures. (Note that some simulations may take several hours or days to complete and may produce over 500 Gb of data.)
 
 ``` Run_ecoevo.m ``` includes the following default configuration:
 
@@ -60,6 +60,8 @@ eco_params.initialtraits = 'single'; % define initial trait distribution
 ```
 
 These changes extend the model run time to 1000 years (```env_forcing.tmax = 1000.*360;```), supress verbose lineage tracking (```eco_params.bioinf_verbose = false;```), and decrease the probability of mutations in the binary genome (```eco_params.pneutral = 0.1;```). This last change is to prevent the number of neutral mutations from exceeding the size of the binary genome.
+
+Figure 2 requires the model to be run using Beckmann et al.'s "trait diffusion" approximation of the individual based model. This can be done by setting ```eco_params.model_type = 'MCM';``` on line 10 of ``` Run_ecoevo.m ``` (with all other parameters set as standard).
 
 Figure A.1 can be reproduced by running the ```clock_test.m``` script in the ```Sandbox``` directory.
 
