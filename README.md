@@ -57,4 +57,4 @@ eco_params.nsuper         = 1;    % number of individuals per super-individual
 eco_params.initialtraits = 'single'; % define initial trait distribution
 ```
 
-These changes extend the model run time to 1000 years (```env_forcing.tmax = 1000.*360;```), supress verbose lineage tracking (```eco_params.bioinf_verbose = false;```), and decrease the probability of mutations in the binary genome (```eco_params.pneutral = 0.1;```).
+These changes extend the model run time to 1000 years (```env_forcing.tmax = 1000.*360;```), supress verbose lineage tracking (```eco_params.bioinf_verbose = false;```), and decrease the probability of mutations in the binary genome (```eco_params.pneutral = 0.1;```). This last change is to prevent the number of neutral mutations from exceeding the size of the binary genome.
