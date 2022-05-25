@@ -1,5 +1,6 @@
 # Plankton_IBM
- Plankton IBM with phylogenetics
+
+Instructions for reproducing the figures presented in "Rapid evolution allows coexistence of highly divergent lineages within the same niche", by Ward and Collins.
 
 Published model results can be reproduced by running the ``` Run_ecoevo.m ``` script. This will run the model and plot a selection of different figures
 
@@ -24,6 +25,7 @@ eco_params.nsuper         = 1;    % number of individuals per super-individual
 
 eco_params.initialtraits = 'single'; % define initial trait distribution
 ```
+
 The environmental forcing function can be changed between the six different configurations shown in Figure 6 by changing the ``` eco_params.forcing ``` as follows:
 
 | ``` eco_params.forcing ```  | Label in Figure 6 |
@@ -35,7 +37,7 @@ The environmental forcing function can be changed between the six different conf
 | ```gradual```  | (e) warming |
 | ```gradualsinusoidal```  | (f) warming + annual cycle  |
 
-The 1000 year simulation shown in Figure 2, requires the following configuration:
+The 1,000 year simulation shown in Figure 2 requires the following configuration:
 
 ``` Matlab
 %% Overwrite default parameters here
@@ -58,3 +60,7 @@ eco_params.initialtraits = 'single'; % define initial trait distribution
 ```
 
 These changes extend the model run time to 1000 years (```env_forcing.tmax = 1000.*360;```), supress verbose lineage tracking (```eco_params.bioinf_verbose = false;```), and decrease the probability of mutations in the binary genome (```eco_params.pneutral = 0.1;```). This last change is to prevent the number of neutral mutations from exceeding the size of the binary genome.
+
+Figure A.1 can be reproduced by running the ```clock_test.m``` script in the ```Sandbox``` directory.
+
+Figures A.2 and A.3 can be reproduced by running ```Run_ecoevo.m ``` with the standard configuration modified such that ```eco_params.V = 1e-6;``` and ```eco_params.forcing = 'squarewave';```.
