@@ -66,3 +66,5 @@ Figure 2 requires the model to be run using Beckmann et al.'s "trait diffusion" 
 Figure A.1 can be reproduced by running the ```clock_test.m``` script in the ```Sandbox``` directory.
 
 Figures A.2 and A.3 can be reproduced by running ```Run_ecoevo.m ``` with the standard configuration modified such that ```eco_params.V = 1e-6;``` and ```eco_params.forcing = 'squarewave';```.
+
+Note that ```Plankton_IBM``` requires the Matlab ```bioinformatics_toolbox```, ```distrib_computing_toolbox```, and ```statistics_toolbox```
