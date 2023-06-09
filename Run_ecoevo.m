@@ -22,13 +22,25 @@ eco_params.forcing        = 'constant';   % define temperature forcing function
 % forcing cases 'constant', 'stepfunction', 'sinusoidal', 'squarewave', 'gradual', 'gradualsinusoidal'
 
 eco_params.ngenome        = 50; % number of neutral binary genes (53 bases each)
+eco_params.nbit           = 53; % number of bases in each gene - WARNING will still be hard coded as 53 in many places
 eco_params.pneutral       = 1;  % Set to 0.1 for 1000 year runs to avoid saturation
 eco_params.resting_stages = false;
 
-eco_params.V              = 1e-4; % Volume of culture (1e-6 is 1 ml) (All runs in Ward & Collins at 1e-4)
+eco_params.V              = 1e-6; %1e-4; % Volume of culture (1e-6 is 1 ml) (All runs in Ward & Collins at 1e-4)
 eco_params.nsuper         = 1;    % number of individuals per super-individual
 
 eco_params.initialtraits = 'single'; % define initial trait distribution
+
+% set relative probabilities of mutations in each gene
+eco_params.pmut=logspace(log10(1),log10(0.1./env_forcing.tmax),eco_params.ngenome); %produces vector of length ngenes
+eco_params.p=-4.*eco_params.pmut./eco_params.nbit;
+
+% options for lsq curve fitting to estimate genetic distance
+eco_params.lsqOpts= optimoptions('lsqcurvefit',...
+                                'Display','off',...
+                                'UseParallel',false,...
+                                'Algorithm','levenberg-marquardt',...
+                                'SpecifyObjectiveGradient',true);
 
 %% calculate dependent parameters
 run('parameters/dependent_params.m');
