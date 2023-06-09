@@ -156,24 +156,60 @@ d    = distances(Graph_undirected,ilive,ilive)./2;
 % generation divergence (ignores edge weights)
 dgen = distances(Graph_undirected,ilive,ilive,'Method','unweighted')./2; 
 
+
+
+
 if bingene_exists
-    % estimate divergence from molecular clock
-    % find live cell index matching sample index
-    % convert condensed-format genome to full binary strings
+
     genome_string = bioinf_fcns.print_genomes(bingene(ilive,:));
-    
     L = eco_params.ngenome.*53;
+
+    %%
+    nbit = eco_params.nbit; %number of bases per gene
+    ngenes = eco_params.ngenome; %number of genes
+    npopn = length(ilive); %selected individual genomes
+    %%
+
+
+
+    %%% measured distance in population %%%
     
-    % generate hamming-distance matrix
-    p = pdist(genome_string-'0','Hamming');
-    p = squareform(p); % make square matrix
-    X = p.*L./ eco_params.pneutral./2; % convert from fraction of bits different to total bits different
-                                       % also account for mutation probability
-    % 2-base jukes-cantor correction
-    pcorr=p;
-    pcorr(pcorr>0.5)=NaN;
-    jk = -1/2 * log(1 - pcorr * 2/1);
+    %functions to get estimated distance using hamming distance and JK
+    getHam = @(g1, g2) sum(abs(g1-g2),1)./eco_params.nbit; %hamming distance
+    getEst = @(g1, g2) lsqcurvefit(@JukesCantorFun, 1, eco_params.p', ...
+                                    getHam(g1,g2)',0,inf,eco_params.lsqOpts);
+    
+
+    % get binary genes (rows = nbit, columns = genes then populations)
+    binary_genes = dec2bin(bingene(ilive,:)',nbit)';
+    % reshape to [nbit x ngenes x npopn]
+    binary_genes = reshape(binary_genes,nbit,ngenes,npopn);
+    % get estimated distance between every pair
+    dEst = ones(npopn,1);
+    iEst = 1;
+    for X = 1:npopn
+        for Y = 1:npopn
+            dEst(iEst) = getEst(binary_genes(:,:,X), binary_genes(:,:,Y));
+            iEst = iEst + 1;
+        end
+    end
+    % shape into genome X genome grid
+    p = reshape(dEst, npopn, npopn);
+
+
+    %%
+
+    
+     %X = p.*L./ eco_params.pneutral./2; % convert from fraction of bits different to total bits different
+%                                        % also account for mutation probability
+%     % 2-base jukes-cantor correction
+     %pcorr=p;
+     %pcorr(pcorr>L)=NaN; % if any distances greater than total number of bits - as it's generations now presumably not relevent?
+     %jk = -1/2 * log(1 - pcorr * 2/1); %????
+
+    jk = p;
     jk = jk./eco_params.pneutral;
+
 end
 
 % also calculate distance matrix from rgb gene
@@ -433,7 +469,6 @@ if ~strcmp(func2str(env_forcing.Tfunc),'squarewave')
     end
 end
 %% bioinformatics toolbox
-
 clear bingenes
 
 genmat=genome_string(sortnodes,:)-'0';
@@ -581,7 +616,10 @@ end
 
 
 dmat{1}=dgen(sortnodes,sortnodes);
-dmat{2}=jk(sortnodes,sortnodes).*L./2;
+dmat{2}=jk(sortnodes,sortnodes);
+
+%dmat{2}=jk(sortnodes,sortnodes).*L./2;
+dmat{2}=jk(sortnodes,sortnodes)
 titl={'(a) Known divergence','(b) Estimated divergence'};
 
 fig1=figure(202);
@@ -627,24 +665,28 @@ if bingene_exists
     % compare exact distances with estimates
     sh1=subplot(223);
     sh1.Position(1) = sh1.Position(1) - 0.03;
-    scatter(dgen(:),X(:),15,'k','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
-    hold on
-    scatter(dgen(:),jk(:).*L./2,15,'r','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
-    
-    xi = linspace(0,max(dgen(:)),100); % true number of generations
-    nonsat_ham=xi.*2./L;              % non-saturated Hamming distance (double distance)
-    psat = 1/2.*(1 - exp(-2.*(nonsat_ham))); % estimated saturated  hamming distance
-    
-    ijk = linspace(0,i,100);
-    xjk = psat;
-    yjk = -1/2 * log(1 - xjk * 2/1);
-    ejk = sqrt(xjk.*(1-xjk)./(L*((1-2.*xjk).^2)));
-    
-    pl1 =plot( xi,psat.*L./2,'-','LineWidth',2,'Color',[0.5 0.5 0.5]);
 
-    pl2 =plot(xi, yjk     .*L./2,'-','LineWidth',2,'Color',[0.75 0 0]);
-    pl2a=plot(xi,(yjk+ejk).*L./2,':','LineWidth',2,'Color',[0.75 0 0]);
-    pl2b=plot(xi,(yjk-ejk).*L./2,':','LineWidth',2,'Color',[0.75 0 0]);
+
+    %% %%%%%% PLOT C: ESTIMATED VS ACTUAL GENERATIONS
+
+    scatter(dgen(:),jk(:),15,'k','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
+    hold on
+
+    xi = linspace(0,max(dgen(:)),100); % true number of generations
+
+      nonsat_ham=xi.*2./L;              % non-saturated Hamming distance (double distance)
+      psat = 1/2.*(1 - exp(-2.*(nonsat_ham))); % estimated saturated  hamming distance
+%     
+%     ijk = linspace(0,i,100);
+      xjk = psat;
+      yjk = -1/2 * log(1 - xjk * 2/1);
+      ejk = sqrt(xjk.*(1-xjk)./(L*((1-2.*xjk).^2)));
+%     
+      pl1 =plot( xi,psat.*L./2,'-','LineWidth',2,'Color',[0.5 0.5 0.5]);
+% 
+      pl2 =plot(xi, yjk.*L./2,'-','LineWidth',2,'Color',[0.75 0 0]);
+      pl2a=plot(xi,(yjk+ejk).*L./2,':','LineWidth',2,'Color',[0.75 0 0]);
+      pl2b=plot(xi,(yjk-ejk).*L./2,':','LineWidth',2,'Color',[0.75 0 0]);
    
     xlim([0 max(dgen(:))]);
     xlabel('Known divergence (generations)')
@@ -653,15 +695,23 @@ if bingene_exists
     box on
     title('(c) Clock vs. generations')
     legend([pl2 pl1],'Corrected','Uncorrected','Location','SouthEast')
+    
+
+
+
+    %% %%%%%% PLOT D: ESTIMATED VS ACTUAL GENERATIONS, GROUPED INTO YEARS
+
+    
     set(gca,'FontSize',fntsz)
     
 
     sh2=subplot(224);
     sh2.Position(1) = sh2.Position(1) - 0.03;
-    hold off
-    scatter(d(:)./365,X(:),15,'k','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
-    hold on
-    scatter(d(:)./365,jk(:).*L./2,15,'r','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
+    %hold off
+    %scatter(d(:)./365,X(:),15,'k','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
+    %hold on
+    %scatter(d(:)./365,jk(:).*L./2,15,'r','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
+    scatter(d(:)./365,jk(:),'r','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
     xlabel('Known divergence  (years)')
     ylabel('Estimated divergence (generations)')
     axis square
@@ -686,33 +736,43 @@ if bingene_exists
     fig808.Position = [152 350 350 350];
     clf
     
+
+
+
+
+    %% %%%%%% PLOT C: ESTIMATED VS ACTUAL GENERATIONS +
+            %  + ADJUSTMENT FOR MUTATION RATE? * eco_params.pneutral
+            %  + SAVED SEPARATELY
+        
+
+
     % compare exact distances with estimates
-    scatter(dgen(:),X(:),15,'k','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
-    hold on
-    scatter(dgen(:),jk(:).*L./2,15,'r','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
+    %scatter(dgen(:),X(:),15,'k','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
+    %hold on
+    scatter(dgen(:),jk(:),15,'r','filled','MarkerFaceAlpha',0.1,'MarkerEdgeColor','none');
     
     xi = linspace(0,max(dgen(:)),100); % true number of generations
     xi_mut=xi.*eco_params.pneutral;    % true number of mutations
-    psat = 1/2.*(1 - exp(-4.*(xi_mut./L))); % estimated saturated hamming distance
-    
-    ijk = linspace(0,i,100);
-    xjk = psat;
-    yjk = -1/2 * log(1 - xjk * 2/1);
-    ejk = sqrt(xjk.*(1-xjk)./(L*((1-2.*xjk).^2)));
-    X = p.*L./ eco_params.pneutral./2;
-    pl1 =plot( xi,psat.*L./ eco_params.pneutral./2,'-','LineWidth',2,'Color',[0.5 0.5 0.5]);
+     psat = 1/2.*(1 - exp(-4.*(xi_mut./L))); % estimated saturated hamming distance
+     hold on
+     
+%     ijk = linspace(0,i,100);
+     xjk = psat;
+     yjk = -1/2 * log(1 - xjk * 2/1);
+     ejk = sqrt(xjk.*(1-xjk)./(L*((1-2.*xjk).^2)));
+     %X = p.*L./ eco_params.pneutral./2;
+     pl1 =plot( xi,psat.*L./ eco_params.pneutral./2,'-','LineWidth',2,'Color',[0.5 0.5 0.5]);
+     pl2 =plot(xi, yjk     .*L./2./ eco_params.pneutral,'-','LineWidth',2,'Color',[0.75 0 0]);
+     pl2a=plot(xi,(yjk+ejk).*L./2./ eco_params.pneutral,':','LineWidth',2,'Color',[0.75 0 0]);
+     pl2b=plot(xi,(yjk-ejk).*L./2./ eco_params.pneutral,':','LineWidth',2,'Color',[0.75 0 0]);
 
-    pl2 =plot(xi, yjk     .*L./2./ eco_params.pneutral,'-','LineWidth',2,'Color',[0.75 0 0]);
-    pl2a=plot(xi,(yjk+ejk).*L./2./ eco_params.pneutral,':','LineWidth',2,'Color',[0.75 0 0]);
-    pl2b=plot(xi,(yjk-ejk).*L./2./ eco_params.pneutral,':','LineWidth',2,'Color',[0.75 0 0]);
-   
     xlim([0 max(dgen(:))]);
     xlabel('Known divergence (generations)')
     ylabel('Estimated divergence (generations)')
     axis square
     box on
     title('(c) Clock vs. generations')
-    legend([pl2 pl1],'Corrected','Uncorrected','Location','SouthEast')
+    %legend([pl2 pl1],'Corrected','Uncorrected','Location','SouthEast')
     set(gca,'FontSize',fntsz)
     
 

@@ -1,8 +1,8 @@
 clear 
-addpath ~/GitHub/Plankton_IBM/Functions
+addpath 'github_repo'; %~/GitHub/Plankton_IBM/Functions
 bioinf_fcns  = bioinf_functions; 
 
-outdir = '~/GitHub/Plankton_IBM/output/';
+outdir = 'output/'; %'~/GitHub/Plankton_IBM/output/';
 cd(outdir)
 
 fntsz = 14;
