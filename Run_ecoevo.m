@@ -51,6 +51,19 @@ y = y0;
 switch eco_params.model_type
    
     case {'IBM'}  
+
+        % clean any previous run csv files
+        files = dir("output");
+        for fi = 1:numel(files)
+            if (startsWith(files(fi).name, 'time_of_dying_') ||... 
+                startsWith(files(fi).name, 'phylogeny_')) &&...
+                endsWith(files(fi).name, '.csv')
+                    filePath = fullfile("output", files(fi).name); % Construct the full file path
+                    delete(filePath); % Delete the file
+                    disp(['Deleted: ' filePath]); % Display a message indicating the deleted file
+            end 
+        end
+        
         disp('   Evaluating Individual-Based Model') 
         [yout y tout eco_params bioinformatics phylogeny] = timestep_IBM(y,env_forcing,eco_params,bioinformatics,bioinf_fcns,phylogeny);
         % yout         = binned state variable output (all timesteps)
