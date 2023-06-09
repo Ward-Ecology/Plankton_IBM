@@ -17,7 +17,7 @@ end
  
  
  
- 
+
  
 %% Apply single-point mutations to all genes in all extant populations
 function [rgb] = rgb_mutate(rgb,biomass)
@@ -42,7 +42,7 @@ function [rgb] = rgb_mutate(rgb,biomass)
     
 end
  %%
-function [genome] = gene_mutate(genome,newbio)
+ function [genome] = gene_mutate(genome,newbio,pmut)
 
     % get locations of non-zero biomass
     kk=find(reshape(newbio,[],1)); 
@@ -57,24 +57,53 @@ function [genome] = gene_mutate(genome,newbio)
         npopn=numel(kk);      % number of extant populations
         nbit = 53; % uint64 (maximum 53 bits so integers also fit within float32)
         
-        % all genes have equal probability of mutation
-        ww=ones(1,ngenes); 
         
-        igene = randsample(ngenes, npopn, true, ww)'; % identify gene in which to flip single base
-        % (each gene can flip >1 base)
-        ibase = randi(nbit,npopn,1);    % identify base to flip in that gene 
+        usePMut = true; %use logarithmic gradient for probability of mutating each gene
+        if usePMut
+            %%%%%% FROM Test_clock.m
+            % identify genes in which to flip single base (1 in each population)
+            i_gene_mut = rand([npopn ngenes])<pmut; %random number for each gene in each population
+            igene = find(i_gene_mut); % indices of each gene selected - produces 1d vector ordered row by row
+            % identify base to flip in those genes 
+            ibase=randi(nbit,size(igene)); % bit to flip in each gene selected (normal dist)
+            
+            %get values of genes to mutate
+            extantLin = extant(:);
+            uint_values = extantLin(igene);
 
-        % get index of genes to mutate within overall extant population
-        genind=sub2ind([npopn ngenes],1:npopn,igene);
-        
-        % extract fp_values of mutant genes of extant populations
-        uint_values=extant(genind);
-        
-        % get original value of mutated bases (bits)
-        mut=bitget(uint_values(:),ibase(:));
-        
-        % get new genome after flipping a single bit
-        extant(genind)=bitset(uint_values(:),ibase(:),1-mut);
+            % get original value of mutated bases (bits)
+            mut=bitget(uint_values,ibase);
+            % mutate them
+            extantLin(igene) = bitset(uint_values,ibase,1-mut);
+
+            %reconvert back to 2d vector
+            extant = reshape(extantLin, [npopn, ngenes]);
+
+            %%%%%%
+        else
+            ww=ones(1,ngenes); 
+            %%%%%% old method (uniform selection)
+            igene = randsample(ngenes, npopn, true, ww)'; % identify gene in which to flip single base
+            % (each gene can flip >1 base)
+            ibase = randi(nbit,npopn,1);    % identify base to flip in that gene
+
+            % get index of genes to mutate within overall extant population
+            genind=sub2ind([npopn ngenes],1:npopn,igene);
+            
+            % extract fp_values of mutant genes of extant populations
+            uint_values=extant(genind);
+
+            % get original value of mutated bases (bits)
+            mut=bitget(uint_values(:),ibase(:));
+            
+            % get new genome after flipping a single bit
+            extant(genind)=bitset(uint_values(:),ibase(:),1-mut);
+
+            %%%%%%
+        end
+
+
+
         
         % place back in full genome array
         genome(kk,:)=extant;

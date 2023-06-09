@@ -105,7 +105,7 @@ function [V eco_params bioinformatics phylogeny] = MUSE_IBM_eqs(t,V,env_forcing,
             imut    = find(mutrand<=eco_params.pneutral);
             if ~isempty(imut)
                 i_mutates = [tofill(imut) i_dividing(imut)];
-                bioinformatics.genome(i_mutates,:) = bioinf_fcns.gene_mutate(bioinformatics.genome(i_mutates,:),ones(size(i_mutates)));
+                bioinformatics.genome(i_mutates,:) = bioinf_fcns.gene_mutate(bioinformatics.genome(i_mutates,:),ones(size(i_mutates)), eco_params.pmut);
             end
             
             if eco_params.bioinf_verbose
